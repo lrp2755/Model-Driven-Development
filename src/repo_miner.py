@@ -16,56 +16,71 @@ Sub-commands:
   - fetch-commits
 """
 
-import os
 import argparse
 import pandas as pd
 from github import Github
-from datetime import datetime
 
-def fetch_commits(repo_name: str, max_commits: int = None) -> pd.DataFrame:
-    owner = "lrp2755"
-    repo_name = "Model-Driven-Development"
-
+def fetch_commits(repo_name: str, max_commits: int) -> pd.DataFrame:
     # No authentication needed for public repositories (rate limits apply)
     g = Github()
 
-    repo = g.get_user(owner).get_repo(repo_name)
+    repo = g.get_repo(repo_name)
     branches = repo.get_branches()
     i = 0
-    
-    for branch in branches:
-        if(max_commits != None):
-            if(i > max_commits):
-                break
 
-        branch_name = str(branch)[13:len(str(branch))-2]
-        commits = repo.get_commits(sha=branch_name)
+    commits = repo.get_commits()
+    df = pd.DataFrame()
+    shas = []
+    author_names = []
+    author_emails = []
+    commit_dates = []
+    messages = []
+    # Iterate and print commit information
+    for commit_val in commits:
+        if (max_commits != None and i > max_commits):
+            break
+        # SHA
+        sha = commit_val.commit.sha
 
-        # Iterate and print commit information
-        for commit_val in commits:
-            # SHA
-            sha = commit_val.commit.sha
+        # Author name and email
+        author_name = commit_val.commit.author.name
+        author_email = commit_val.commit.author.email
 
-            # Author name and email
-            author_name = commit_val.commit.author.name
-            author_email = commit_val.commit.author.email
+        # Commit date in ISO-8601 format
+        commit_date = commit_val.commit.author.date.isoformat()
 
-            # Commit date in ISO-8601 format
-            commit_date = commit_val.commit.author.date.isoformat()
+        # First line of the commit message
+        message_first_line = commit_val.commit.message.splitlines()[0]
 
-            # First line of the commit message
-            message_first_line = commit_val.commit.message.splitlines()[0]
+        current_commit = [sha, author_name, author_email, commit_date, message_first_line]
 
-            current_commit = [sha, author_name, author_email, commit_date, message_first_line]
-            print(current_commit)
+        #df[f'Commit #{i}'] = [sha, author_name, author_email, commit_date, message_first_line]
+        shas.append(sha)
+        author_names.append(author_name)
+        author_emails.append(author_email)
+        commit_dates.append(commit_date)
+        messages.append(message_first_line)
+        #df['SHA'] += sha
+        #df['Author Name'] += author_name
+        #df['Author Email'] += author_email
+        #df['Commit Date'] += commit_date
+        #df['Message'] += message_first_line
+
+        print(current_commit)
         i += 1
+    df['shas'] = shas
+    df['author_names'] = author_names
+    df['author_emails'] = author_emails
+    df['commit_dates'] = commit_dates
+    df['messages'] = messages
+
+    return df
 
 def main():
-    fetch_commits("Model-Driven-Development",0)
     """
     Parse command-line arguments and dispatch to sub-commands.
     """
-    '''parser = argparse.ArgumentParser(
+    parser = argparse.ArgumentParser(
         prog="repo_miner",
         description="Fetch GitHub commits/issues and summarize them"
     )
@@ -84,8 +99,7 @@ def main():
     if args.command == "fetch-commits":
         df = fetch_commits(args.repo, args.max_commits)
         df.to_csv(args.out, index=False)
-        print(f"Saved {len(df)} commits to {args.out}")'''
-
+        print(f"Saved {len(df)} commits to {args.out}")
 
 if __name__ == "__main__":
     main()
