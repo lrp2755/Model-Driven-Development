@@ -28,19 +28,75 @@ def fetch_commits(repo_name: str, max_commits: int = None) -> pd.DataFrame:
     Returns a DataFrame with columns: sha, author, email, date, message.
     """
     # 1) Read GitHub token from environment
-    # TODO
+    github_token = os.getenv("GITHUB_TOKEN")
 
-    # 2) Initialize GitHub client and get the repo
-    # TODO
+    # 2) Initialize GitHub client
+    # it is public sooooo we don't need to do auth?
+    github_auth = Github()
+    owner = "lrp2755"
+    repo_name = "Model-Driven-Development"
 
-    # 3) Fetch commit objects (paginated by PyGitHub)
-    # TODO
+    try:
+        # 2) get the repo
+        repo = g.get_user(owner).get_repo(repo_name)
 
-    # 4) Normalize each commit into a record dict
-    # TODO
+        # 3) Fetch commit objects (paginated by PyGitHub)
+        # TODO
+        main_commits = repo.get_commits(sha="main")
+        rm0_commits = repo.get_commits(sha="rm0-dev")
 
-    # 5) Build DataFrame from records
-    # TODO
+        # 4) Normalize each commit into a record dict
+        # TODO
+        main_commits_normalized = []
+        rm0_commits_normalized = []
+
+        # sha, author, email, date (ISO-8601), message (first line)
+        for commit_val in main_commits:
+            # SHA (hexsha)
+            sha = commit_val.hexsha
+
+            # Author name and email
+            author_name = commit_val.author.name
+            author_email = commit_val.author.email
+
+            # Commit date in ISO-8601 format
+            # Convert timestamp to datetime object, then format to ISO-8601
+            commit_datetime = datetime.fromtimestamp(commit_val.committed_date)
+            commit_date_iso = commit_datetime.isoformat()
+
+            # First line of the commit message
+            message_first_line = commit_val.message.splitlines()[0]
+            current_commit = [sha, author_name, author_email, commit_date_iso, message_first_line]
+            main_commits_normalized.append(current_commit)
+
+        for commit_val in rm0_commits:
+            # SHA (hexsha)
+            sha = commit_val.hexsha
+
+            # Author name and email
+            author_name = commit_val.author.name
+            author_email = commit_val.author.email
+
+            # Commit date in ISO-8601 format
+            # Convert timestamp to datetime object, then format to ISO-8601
+            commit_datetime = datetime.fromtimestamp(commit_val.committed_date)
+            commit_date_iso = commit_datetime.isoformat()
+
+            # First line of the commit message
+            message_first_line = commit_val.message.splitlines()[0]
+            current_commit = [sha, author_name, author_email, commit_date_iso, message_first_line]
+            rm0_commits_normalized.append(current_commit)
+        # 5) Build DataFrame from records
+        # TODO
+        df = pd.DataFrame()
+
+        df['main'] = main_commits_normalized
+        df['rm0-dev'] = rm0_commits_normalized
+
+        print(df)
+
+    except Exception as e:
+        print(f"Error getting repository: {e}")
 
 
 def main():
