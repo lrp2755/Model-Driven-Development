@@ -37,119 +37,28 @@ def fetch_commits(repo_name: str, max_commits: int = None) -> pd.DataFrame:
         if(max_commits != None):
             if(i > max_commits):
                 break
-        print(branch)
-        # remove Branch(name="
+
         branch_name = str(branch)[13:len(str(branch))-2]
         commits = repo.get_commits(sha=branch_name)
 
         # Iterate and print commit information
-        for commit in commits:
-            print("Branch: "+str(branch))
-            print(f"SHA: {commit.sha}")
-            print(f"Author: {commit.author.login if commit.author else 'N/A'}")
-            print(f"Date: {commit.commit.author.date}")
-            print(f"Message: {commit.commit.message}")
-            print("-" * 20)
-        i += 1
-
-
-'''
-def fetch_commits(repo_name: str, max_commits: int = None) -> pd.DataFrame:
-    """
-    Fetch up to `max_commits` from the specified GitHub repository.
-    Returns a DataFrame with columns: sha, author, email, date, message.
-    """
-    # 1) Read GitHub token from environment
-    github_token = os.getenv("GITHUB_TOKEN")
-
-    # 2) Initialize GitHub client
-    # it is public sooooo we don't need to do auth?
-    github_auth = Github()
-    owner = "lrp2755"
-    repo_name = "Model-Driven-Development"
-
-    try:
-        # 2) get the repo
-        repo = github_auth.get_user(owner).get_repo(repo_name)
-
-        # 3) Fetch commit objects (paginated by PyGitHub)
-        # TODO
-        main_commits = repo.get_commits(sha="main")
-        for commit_val in main_commits:
-            # SHA (hexsha)
-            #sha = commit_val.hexsha
+        for commit_val in commits:
+            # SHA
+            sha = commit_val.commit.sha
 
             # Author name and email
-            author_name = commit_val.author.name
-            author_email = commit_val.author.email
+            author_name = commit_val.commit.author.name
+            author_email = commit_val.commit.author.email
 
             # Commit date in ISO-8601 format
-            # Convert timestamp to datetime object, then format to ISO-8601
-            #commit_datetime = datetime.fromtimestamp(commit_val.committed_date)
-            #commit_date_iso = commit_datetime.isoformat()
+            commit_date = commit_val.commit.author.date.isoformat()
 
             # First line of the commit message
-            #message_first_line = commit_val.message.splitlines()[0]
+            message_first_line = commit_val.commit.message.splitlines()[0]
 
-            current_commit = ["t", author_name, author_email, "t", ""]
+            current_commit = [sha, author_name, author_email, commit_date, message_first_line]
             print(current_commit)
-            #final_commits.append(current_commit)
-        rm0_commits = repo.get_commits(sha="rm0-dev")
-
-        # 4) Normalize each commit into a record dict
-        # TODO
-        final_commits = []
-
-        # sha, author, email, date (ISO-8601), message (first line)
-        for commit_val in repo.iter_commits():
-            # SHA (hexsha)
-            sha = commit_val.hexsha
-
-            # Author name and email
-            author_name = commit_val.author.name
-            author_email = commit_val.author.email
-
-            # Commit date in ISO-8601 format
-            # Convert timestamp to datetime object, then format to ISO-8601
-            commit_datetime = datetime.fromtimestamp(commit_val.committed_date)
-            commit_date_iso = commit_datetime.isoformat()
-
-            # First line of the commit message
-            message_first_line = commit_val.message.splitlines()[0]
-
-            current_commit = [sha, author_name, author_email, commit_date_iso, message_first_line]
-            final_commits.append(current_commit)
-
-        ''''''for commit_val in rm0_commits:
-            # SHA (hexsha)
-            sha = commit_val.hexsha
-
-            # Author name and email
-            author_name = commit_val.author.name
-            author_email = commit_val.author.email
-
-            # Commit date in ISO-8601 format
-            # Convert timestamp to datetime object, then format to ISO-8601
-            commit_datetime = datetime.fromtimestamp(commit_val.committed_date)
-            commit_date_iso = commit_datetime.isoformat()
-
-            # First line of the commit message
-            message_first_line = commit_val.message.splitlines()[0]
-            current_commit = [sha, author_name, author_email, commit_date_iso, message_first_line]
-            rm0_commits_normalized.append(current_commit)
-        ''''''
-
-        # 5) Build DataFrame from records
-        # TODO
-        df = pd.DataFrame()
-
-        df['commits'] = final_commits
-
-        print(df)
-
-    except Exception as e:
-        print(f"Error getting repository: {e}")
-'''
+        i += 1
 
 def main():
     fetch_commits("Model-Driven-Development",0)
