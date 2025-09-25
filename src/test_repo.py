@@ -95,6 +95,7 @@ def test_fetch_commits_basic(monkeypatch):
     assert df.iloc[0]["message"] == "Initial commit"
 
 # TODO： Test that fetch_commits respects the max_commits limit.
+@pytest.mark.vcr()
 def test_fetch_commits_limit(monkeypatch):
     df_no_max = fetch_commits("lrp2755/Model-Driven-Development", "")
     df_no_max.to_csv()
@@ -106,6 +107,7 @@ def test_fetch_commits_limit(monkeypatch):
     assert len(df_set_max) == 3 and (len(df_no_max)  > len(df_set_max))
 
 # TODO: Test that fetch_commits returns empty DataFrame when no commits exist.
+@pytest.mark.vcr()
 def test_fetch_commits_empty(monkeypatch):
     # setting a max of 0 commits
     df_set_max = fetch_commits("lrp2755/Model-Driven-Development", 0)
