@@ -97,20 +97,19 @@ def test_fetch_commits_basic(monkeypatch):
 # TODO： Test that fetch_commits respects the max_commits limit.
 @pytest.mark.vcr()
 def test_fetch_commits_limit(monkeypatch):
-    df_no_max = fetch_commits("lrp2755/Model-Driven-Development", "")
+    df_no_max = fetch_commits("octocat/Hello-World", "")
     df_no_max.to_csv()
 
-    # currently, i have 5 commits so i chose 3 since 3 < 5
-    df_set_max = fetch_commits("lrp2755/Model-Driven-Development", 3)
+    df_set_max = fetch_commits("octocat/Hello-World", 2)
     df_set_max.to_csv()
 
-    assert len(df_set_max) == 3 and (len(df_no_max)  > len(df_set_max))
+    assert len(df_set_max) == 2 and (len(df_no_max)  > len(df_set_max))
 
 # TODO: Test that fetch_commits returns empty DataFrame when no commits exist.
 @pytest.mark.vcr()
 def test_fetch_commits_empty(monkeypatch):
     # setting a max of 0 commits
-    df_set_max = fetch_commits("lrp2755/Model-Driven-Development", 0)
+    df_set_max = fetch_commits("octocat/Hello-World", 0)
     df_set_max.to_csv()
 
     assert len(df_set_max) == 0
