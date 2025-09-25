@@ -20,8 +20,40 @@ import os
 import argparse
 import pandas as pd
 from github import Github
+from datetime import datetime
+
+def fetch_commits(repo_name: str, max_commits: int = None) -> pd.DataFrame:
+    owner = "lrp2755"
+    repo_name = "Model-Driven-Development"
+
+    # No authentication needed for public repositories (rate limits apply)
+    g = Github()
+
+    repo = g.get_user(owner).get_repo(repo_name)
+    branches = repo.get_branches()
+    i = 0
+    
+    for branch in branches:
+        if(max_commits != None):
+            if(i > max_commits):
+                break
+        print(branch)
+        # remove Branch(name="
+        branch_name = str(branch)[13:len(str(branch))-2]
+        commits = repo.get_commits(sha=branch_name)
+
+        # Iterate and print commit information
+        for commit in commits:
+            print("Branch: "+str(branch))
+            print(f"SHA: {commit.sha}")
+            print(f"Author: {commit.author.login if commit.author else 'N/A'}")
+            print(f"Date: {commit.commit.author.date}")
+            print(f"Message: {commit.commit.message}")
+            print("-" * 20)
+        i += 1
 
 
+'''
 def fetch_commits(repo_name: str, max_commits: int = None) -> pd.DataFrame:
     """
     Fetch up to `max_commits` from the specified GitHub repository.
@@ -38,20 +70,38 @@ def fetch_commits(repo_name: str, max_commits: int = None) -> pd.DataFrame:
 
     try:
         # 2) get the repo
-        repo = g.get_user(owner).get_repo(repo_name)
+        repo = github_auth.get_user(owner).get_repo(repo_name)
 
         # 3) Fetch commit objects (paginated by PyGitHub)
         # TODO
         main_commits = repo.get_commits(sha="main")
+        for commit_val in main_commits:
+            # SHA (hexsha)
+            #sha = commit_val.hexsha
+
+            # Author name and email
+            author_name = commit_val.author.name
+            author_email = commit_val.author.email
+
+            # Commit date in ISO-8601 format
+            # Convert timestamp to datetime object, then format to ISO-8601
+            #commit_datetime = datetime.fromtimestamp(commit_val.committed_date)
+            #commit_date_iso = commit_datetime.isoformat()
+
+            # First line of the commit message
+            #message_first_line = commit_val.message.splitlines()[0]
+
+            current_commit = ["t", author_name, author_email, "t", ""]
+            print(current_commit)
+            #final_commits.append(current_commit)
         rm0_commits = repo.get_commits(sha="rm0-dev")
 
         # 4) Normalize each commit into a record dict
         # TODO
-        main_commits_normalized = []
-        rm0_commits_normalized = []
+        final_commits = []
 
         # sha, author, email, date (ISO-8601), message (first line)
-        for commit_val in main_commits:
+        for commit_val in repo.iter_commits():
             # SHA (hexsha)
             sha = commit_val.hexsha
 
@@ -66,10 +116,11 @@ def fetch_commits(repo_name: str, max_commits: int = None) -> pd.DataFrame:
 
             # First line of the commit message
             message_first_line = commit_val.message.splitlines()[0]
-            current_commit = [sha, author_name, author_email, commit_date_iso, message_first_line]
-            main_commits_normalized.append(current_commit)
 
-        for commit_val in rm0_commits:
+            current_commit = [sha, author_name, author_email, commit_date_iso, message_first_line]
+            final_commits.append(current_commit)
+
+        ''''''for commit_val in rm0_commits:
             # SHA (hexsha)
             sha = commit_val.hexsha
 
@@ -86,24 +137,26 @@ def fetch_commits(repo_name: str, max_commits: int = None) -> pd.DataFrame:
             message_first_line = commit_val.message.splitlines()[0]
             current_commit = [sha, author_name, author_email, commit_date_iso, message_first_line]
             rm0_commits_normalized.append(current_commit)
+        ''''''
+
         # 5) Build DataFrame from records
         # TODO
         df = pd.DataFrame()
 
-        df['main'] = main_commits_normalized
-        df['rm0-dev'] = rm0_commits_normalized
+        df['commits'] = final_commits
 
         print(df)
 
     except Exception as e:
         print(f"Error getting repository: {e}")
-
+'''
 
 def main():
+    fetch_commits("Model-Driven-Development",0)
     """
     Parse command-line arguments and dispatch to sub-commands.
     """
-    parser = argparse.ArgumentParser(
+    '''parser = argparse.ArgumentParser(
         prog="repo_miner",
         description="Fetch GitHub commits/issues and summarize them"
     )
@@ -122,7 +175,7 @@ def main():
     if args.command == "fetch-commits":
         df = fetch_commits(args.repo, args.max_commits)
         df.to_csv(args.out, index=False)
-        print(f"Saved {len(df)} commits to {args.out}")
+        print(f"Saved {len(df)} commits to {args.out}")'''
 
 
 if __name__ == "__main__":
