@@ -52,22 +52,14 @@ def fetch_commits(repo_name: str, max_commits: int) -> pd.DataFrame:
         # First line of the commit message
         message_first_line = commit_val.commit.message.splitlines()[0]
 
-        current_commit = [sha, author_name, author_email, commit_date, message_first_line]
-
-        #df[f'Commit #{i}'] = [sha, author_name, author_email, commit_date, message_first_line]
         shas.append(sha)
         author_names.append(author_name)
         author_emails.append(author_email)
         commit_dates.append(commit_date)
         messages.append(message_first_line)
-        #df['SHA'] += sha
-        #df['Author Name'] += author_name
-        #df['Author Email'] += author_email
-        #df['Commit Date'] += commit_date
-        #df['Message'] += message_first_line
 
-        print(current_commit)
         i += 1
+
     df['shas'] = shas
     df['author_names'] = author_names
     df['author_emails'] = author_emails
