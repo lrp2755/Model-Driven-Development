@@ -20,52 +20,69 @@ import argparse
 import pandas as pd
 from github import Github
 
+def fetch_issues():
+    # stubbed function since there is import requesting fetch_issues() in test_repo.py!
+    return None
+
+
+def merge_and_summarize():
+    # stubbed function since there is import requesting merge_and_summarize() in test_repo.py!
+    return None
+
 def fetch_commits(repo_name: str, max_commits: int) -> pd.DataFrame:
-    # No authentication needed for public repositories (rate limits apply)
+    # no authentication needed for public repositories so i didn't use a public key
     g = Github()
 
+    # getting the repo
     repo = g.get_repo(repo_name)
-    branches = repo.get_branches()
     i = 0
 
+    # getting the commits
     commits = repo.get_commits()
+
+    # starting dataframe and the columns for the dataframe
     df = pd.DataFrame()
     shas = []
     author_names = []
     author_emails = []
     commit_dates = []
     messages = []
-    # Iterate and print commit information
+
+    # iterate through commits and save information!
     for commit_val in commits:
-        if (max_commits != None and i > max_commits):
+        if ((isinstance(max_commits, int) and (max_commits != None and i >= max_commits))):
             break
         # SHA
         sha = commit_val.commit.sha
 
-        # Author name and email
+        # author name and email
         author_name = commit_val.commit.author.name
         author_email = commit_val.commit.author.email
 
-        # Commit date in ISO-8601 format
+        # commit date in ISO-8601 format
         commit_date = commit_val.commit.author.date.isoformat()
 
-        # First line of the commit message
+        # commit message
         message_first_line = commit_val.commit.message.splitlines()[0]
 
+        # adding to future dataframe columns
         shas.append(sha)
         author_names.append(author_name)
         author_emails.append(author_email)
         commit_dates.append(commit_date)
         messages.append(message_first_line)
 
+        # increasing for max commits
         i += 1
 
+    # updating dataframe columns
     df['shas'] = shas
     df['author_names'] = author_names
     df['author_emails'] = author_emails
     df['commit_dates'] = commit_dates
     df['messages'] = messages
 
+    # return dataframe
     return df
 
 def main():
