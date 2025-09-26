@@ -81,6 +81,7 @@ gh_instance = DummyGithub("fake-token")
 
 # --- Tests for fetch_commits ---
 # An example test case
+
 def test_fetch_commits_basic(monkeypatch):
     # Setup dummy commits
     now = datetime.now()
@@ -95,6 +96,13 @@ def test_fetch_commits_basic(monkeypatch):
     assert df.iloc[0]["message"] == "Initial commit"
 
 # TODO： Test that fetch_commits respects the max_commits limit.
+'''
+    the test_fetch_commits_basic() function is a function that will test if the fetch_commits
+    method from repo_miner will accurately respect the max_commit parameter. 
+    This is tested by utilizing pytest.mark.vcr() and a smaller repo like the one suggested
+    int the write up (octocat/Hello-World) with no max_commits parameter to get the total number 
+    of commits and a number less than that total commits number.
+'''
 @pytest.mark.vcr()
 def test_fetch_commits_limit(monkeypatch):
     df_no_max = fetch_commits("octocat/Hello-World", "")
@@ -106,6 +114,13 @@ def test_fetch_commits_limit(monkeypatch):
     assert len(df_set_max) == 2 and (len(df_no_max)  > len(df_set_max))
 
 # TODO: Test that fetch_commits returns empty DataFrame when no commits exist.
+'''
+    test_fetch_commits_empty() is a method that will check that if there are 0 commits
+    in the repo there is still a data set returned. I tested this by setting the max commits
+    to 0 which will replicate a case in which there is no iteration in the method for each 
+    commit, and the df_set_max_.to_csv() in addition to the length of df_set_max check will 
+    show that an empty dataframe is returned!
+'''
 @pytest.mark.vcr()
 def test_fetch_commits_empty(monkeypatch):
     # setting a max of 0 commits

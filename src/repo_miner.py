@@ -20,15 +20,34 @@ import argparse
 import pandas as pd
 from github import Github
 
+'''
+    the method fetch_issues() is referenced in the given test_repo.py file for 
+    this homework so i created a simple stubbed function as a temporary holder 
+    for the future!
+    this method will be developed further in future homeworks
+'''
 def fetch_issues():
     # stubbed function since there is import requesting fetch_issues() in test_repo.py!
     return None
 
-
+'''
+    the method merge_and_summarize() is referenced in the given test_repo.py file for 
+    this homework so i created a simple stubbed function as a temporary holder 
+    for the future!
+    this method will be developed further in future homeworks
+'''
 def merge_and_summarize():
     # stubbed function since there is import requesting merge_and_summarize() in test_repo.py!
     return None
 
+'''
+    fetch_commits() is a method that will take in a repo name and a number of max
+    commits and save all of the commits in a data frame. the data frame will have
+    the commits sha, author name, author email, commit date, and the first line of 
+    the commit message. The information is gained using the Github import since my 
+    repository is a public repository!
+    The method will return the dataframe of all the commits from this repository
+'''
 def fetch_commits(repo_name: str, max_commits: int) -> pd.DataFrame:
     # no authentication needed for public repositories so i didn't use a public key
     g = Github()
@@ -54,17 +73,13 @@ def fetch_commits(repo_name: str, max_commits: int) -> pd.DataFrame:
             break
         # SHA
         sha = commit_val.commit.sha
-
         # author name and email
         author_name = commit_val.commit.author.name
         author_email = commit_val.commit.author.email
-
         # commit date in ISO-8601 format
         commit_date = commit_val.commit.author.date.isoformat()
-
         # commit message
         message_first_line = commit_val.commit.message.splitlines()[0]
-
         # adding to future dataframe columns
         shas.append(sha)
         author_names.append(author_name)
