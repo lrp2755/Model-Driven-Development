@@ -6,6 +6,8 @@ repo_miner.py
 '''
 
 import argparse
+from datetime import datetime
+
 import pandas as pd
 from github import Github
 
@@ -60,16 +62,13 @@ def fetch_issues(repo_name: str, state: str = "all", max_issues: int = None) -> 
     closed_ats = []
     comments = []
 
+    days_between = []
+
     # 4) Normalize each issue (skip PRs)
     for idx, issue in enumerate(issues):
         if max_issues and idx >= max_issues:
             break
 
-        # Skip pull requests
-        # TODO
-
-        # Append records
-        # TODO
         # id, number, title, user, state, created_at, closed_at, comments.
         ids.append(issue.id)
         numbers.append(issue.number)
@@ -80,14 +79,29 @@ def fetch_issues(repo_name: str, state: str = "all", max_issues: int = None) -> 
         closed_ats.append(issue.closed_at)
         comments.append(issue.comments)
 
+        # updating the days inbetween
+        if(issue.closed_at is None):
+            closed_at = datetime.now().isoformat()
+        else:
+            closed_at = issue.closed_at
+
+        date_one = datetime.fromisoformat(closed_at)
+        date_two = datetime.fromisoformat(issue.created_at.isoformat())
+
+        date_one = date_one.replace(tzinfo=None)
+        date_two = date_two.replace(tzinfo=None)
+
+        difference = (date_two.date() - date_one.date()).days
+        days_between.append(difference)
+
     # 5) Build DataFrame
-    # updating dataframe columns
     df['ids'] = ids
     df['numbers'] = numbers
     df['titles'] = titles
     df['users'] = users
     df['states'] = state
     df['create_ats'] = created_ats
+    df['open_duration_days'] =days_between
     df['closed_ats'] = closed_ats
     df['comments'] = comments
 
