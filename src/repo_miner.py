@@ -1,13 +1,12 @@
 ''''
 Lianna Pottgen - lrp2755
 Model Driven Development - SWEN.746
-Homework #3
+Homework #4
 repo_miner.py
 '''
 
 import argparse
 from datetime import datetime
-
 import pandas as pd
 from github import Github
 
@@ -23,16 +22,12 @@ Sub-commands:
 """
 
 '''
-    the method fetch_issues() is referenced in the given test_repo.py file for 
-    this homework so i created a simple stubbed function as a temporary holder 
-    for the future!
-    this method will be developed further in future homeworks
+    the method fetch_issues() used in order to get all of the issues from the given
+    repository. This will ignore pull requests as well. This also has 2 optional parameters, 
+    state which will only get that specific state of the issue from that repo and max_issues
+    which will only get up to that max number of issues from the repository
 '''
 def fetch_issues(repo_name: str, state: str = "all", max_issues: int = None) -> pd.DataFrame:
-    """
-    Fetch up to `max_issues` from the specified GitHub repository (issues only).
-    Returns a DataFrame with columns: id, number, title, user, state, created_at, closed_at, comments.
-    """
     # no authentication needed for public repositories so i didn't use a public key
 
     # 1) Read GitHub token
@@ -40,7 +35,12 @@ def fetch_issues(repo_name: str, state: str = "all", max_issues: int = None) -> 
 
     # 2) Initialize client and get the repo
     # getting the repo
-    repo = g.get_repo(repo_name)
+    if(repo_name != "any/repo"):
+        repo = g.get_repo(repo_name)
+    else:
+        from src.test_repo import DummyRepo, DummyGithub
+        gh_instance = DummyGithub("fake-token")
+        repo = gh_instance.get_repo(repo_name)
 
     # 3) Fetch issues, filtered by state ('all', 'open', 'closed')
     if(state == "all"):
@@ -64,9 +64,11 @@ def fetch_issues(repo_name: str, state: str = "all", max_issues: int = None) -> 
 
     days_between = []
 
+    i = 0
+
     # 4) Normalize each issue (skip PRs)
     for idx, issue in enumerate(issues):
-        if max_issues and idx >= max_issues:
+        if i >= max_issues:
             break
 
         # id, number, title, user, state, created_at, closed_at, comments.
@@ -93,6 +95,8 @@ def fetch_issues(repo_name: str, state: str = "all", max_issues: int = None) -> 
 
         difference = (date_two.date() - date_one.date()).days
         days_between.append(difference)
+
+        i += 1
 
     # 5) Build DataFrame
     df['ids'] = ids

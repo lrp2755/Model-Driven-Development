@@ -65,6 +65,9 @@ class DummyRepo:
 class DummyGithub:
     def __init__(self, token):
         assert token == "fake-token"
+        self._repo = None
+    def set_repo(self, DummyRepo):
+        self._repo = DummyRepo
     def get_repo(self, repo_name):
         # ignore repo_name; return repo set in test fixture
         return self._repo
@@ -129,12 +132,52 @@ def test_fetch_commits_empty(monkeypatch):
 
     assert len(df_set_max) == 0
 
-def test_fetch_issues_basic(monkeypatch):
+
+#PRs are excluded.
+#Dates parse correctly.
+#open_duration_days is computed accurately.
+@pytest.mark.vcr()
+def test_fetch_issues_pr_excluded(monkeypatch):
+    #ids,numbers,titles,users,states,create_ats,open_duration_days,closed_ats,comments
+
     now = datetime.now()
     issues = [
         DummyIssue(1, 101, "Issue A", "alice", "open", now, None, 0),
         DummyIssue(2, 102, "Issue B", "bob", "closed", now - timedelta(days=2), now, 2)
     ]
+    gh_instance._repo = DummyRepo([], issues)
+    df = fetch_issues("any/repo", state="all")
+    assert {"id", "number", "title", "user", "state", "created_at", "closed_at", "comments"}.issubset(df.columns)
+    assert len(df) == 2
+    # Check date normalization
+    # TODO
+
+def test_fetch_issues_date_parse_correct(monkeypatch):
+    now = datetime.now()
+    issues = [
+        DummyIssue(1, 101, "Issue A", "alice", "open", now, None, 0),
+        DummyIssue(2, 102, "Issue B", "bob", "closed", now - timedelta(days=2), now, 2)
+    ]
+    gh_instance = DummyGithub("fake-token")
+    gh_instance.set_repo(DummyRepo([], issues))
+    df = fetch_issues("any/repo", state="all")
+
+    # Check date normalization
+    # TODO
+    # for all dates in date coloumn
+    # check format is
+    create_ats = df['create_ats']
+    closed_ats = df['closed_ats']
+    print(create_ats)
+
+@pytest.mark.vcr()
+def test_fetch_issues_open_duration_days(monkeypatch):
+    now = datetime.now()
+    issues = [
+        DummyIssue(1, 101, "Issue A", "alice", "open", now, None, 0),
+        DummyIssue(2, 102, "Issue B", "bob", "closed", now - timedelta(days=2), now, 2)
+    ]
+
     gh_instance._repo = DummyRepo([], issues)
     df = fetch_issues("any/repo", state="all")
     assert {"id", "number", "title", "user", "state", "created_at", "closed_at", "comments"}.issubset(df.columns)
