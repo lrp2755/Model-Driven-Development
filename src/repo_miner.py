@@ -4,9 +4,10 @@ Model Driven Development - SWEN.746
 Homework #3
 repo_miner.py
 '''
-from certifi.__main__ import args
+import os
 import argparse
 import pandas as pd
+from certifi.__main__ import args
 from github import Github
 
 # !/usr/bin/env python3
@@ -170,13 +171,6 @@ def main():
     """
     Parse command-line arguments and dispatch to sub-commands.
     """
-    #df = fetch_issues("lrp2755/Model-Driven-Development", "all", 30)
-    #df.to_csv("issues.csv", index=False)
-    #print(f"Saved {len(df)} issues to issues.csv")
-    df = fetch_issues(args.repo, args.state, args.max_issues)
-    df.to_csv(args.out, index=False)
-    print(f"Saved {len(df)} issues to {args.out}")
-
     parser = argparse.ArgumentParser(
         prog="repo_miner",
         description="Fetch GitHub commits/issues and summarize them"
@@ -209,7 +203,6 @@ def main():
         df = fetch_issues(args.repo, args.state, args.max_issues)
         df.to_csv(args.out, index=False)
         print(f"Saved {len(df)} issues to {args.out}")
-
 
 if __name__ == "__main__":
     main()
