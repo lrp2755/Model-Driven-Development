@@ -4,10 +4,9 @@ Model Driven Development - SWEN.746
 Homework #3
 repo_miner.py
 '''
-import os
+
 import argparse
 import pandas as pd
-from certifi.__main__ import args
 from github import Github
 
 # !/usr/bin/env python3
@@ -62,7 +61,6 @@ def fetch_issues(repo_name: str, state: str = "all", max_issues: int = None) -> 
     comments = []
 
     # 4) Normalize each issue (skip PRs)
-    # TODO
     for idx, issue in enumerate(issues):
         if max_issues and idx >= max_issues:
             break
@@ -83,7 +81,6 @@ def fetch_issues(repo_name: str, state: str = "all", max_issues: int = None) -> 
         comments.append(issue.comments)
 
     # 5) Build DataFrame
-    # TODO: return statement
     # updating dataframe columns
     df['ids'] = ids
     df['numbers'] = numbers
@@ -192,6 +189,8 @@ def main():
     c2.add_argument("--max",   type=int, dest="max_issues",
                     help="Max number of issues to fetch")
     c2.add_argument("--out",   required=True, help="Path to output issues CSV")
+
+    args = parser.parse_args()
 
     # Dispatch based on selected command
     if args.command == "fetch-commits":
