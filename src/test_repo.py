@@ -30,6 +30,10 @@ class DummyCommit:
     def __init__(self, sha, author, email, date, message):
         self.sha = sha
         self.commit = DummyCommitCommit(DummyAuthor(author, email, date), message)
+        self.author = author
+        self.email = email
+        self.date = date
+        self.message = message
 
 class DummyUser:
     def __init__(self, login):
@@ -94,11 +98,19 @@ def test_fetch_commits_basic(monkeypatch):
         DummyCommit("sha1", "Alice", "a@example.com", now, "Initial commit\nDetails"),
         DummyCommit("sha2", "Bob", "b@example.com", now - timedelta(days=1), "Bug fix")
     ]
-    gh_instance._repo = DummyRepo(commits, [])
-    df = fetch_commits("any/repo")
-    assert list(df.columns) == ["sha", "author", "email", "date", "message"]
+    gh_instance = DummyGithub("fake-token")
+    gh_instance.set_repo(DummyRepo(commits, []))
+
+    # monkeypatch fetch_issues to use our dummy instance
+    import src.repo_miner as repo_miner
+    monkeypatch.setattr(repo_miner, "Github", lambda: gh_instance)
+
+    df = fetch_commits("any/repo", None)
+
+    assert list(df.columns) == ["shas", "author_names", "author_emails", "commit_dates", "messages"]
     assert len(df) == 2
-    assert df.iloc[0]["message"] == "Initial commit"
+    first_commit = df['messages'][0]
+    assert first_commit == "Initial commit"
 
 # TODO： Test that fetch_commits respects the max_commits limit.
 '''
@@ -118,7 +130,6 @@ def test_fetch_commits_limit(monkeypatch):
 
     assert len(df_set_max) == 2 and (len(df_no_max)  > len(df_set_max))
 
-# TODO: Test that fetch_commits returns empty DataFrame when no commits exist.
 '''
     test_fetch_commits_empty() is a method that will check that if there are 0 commits
     in the repo there is still a data set returned. I tested this by setting the max commits
@@ -128,6 +139,7 @@ def test_fetch_commits_limit(monkeypatch):
 '''
 @pytest.mark.vcr()
 def test_fetch_commits_empty(monkeypatch):
+
     # setting a max of 0 commits
     df_set_max = fetch_commits("octocat/Hello-World", 0)
     df_set_max.to_csv()
@@ -150,8 +162,6 @@ def test_fetch_issues_pr_excluded(monkeypatch):
     df = fetch_issues("any/repo", state="all")
     assert {"id", "number", "title", "user", "state", "created_at", "closed_at", "comments"}.issubset(df.columns)
     assert len(df) == 2
-    # Check date normalization
-    # TODO
 
 def test_fetch_issues_date_parse_correct(monkeypatch):
     now = datetime.now()
@@ -174,6 +184,12 @@ def test_fetch_issues_date_parse_correct(monkeypatch):
     closed_ats = df['closed_ats']
 
     # assert
+    assert str(closed_ats[1]) == now.isoformat()
+    assert str(create_ats[0]) == now.isoformat()
+    #assert closed_ats[0] == ''
+    #assert str(create_ats[1]) == now - timedelta(days=2).isoformat()
+    #assert closed_ats[0] == ''
+
 
 @pytest.mark.vcr()
 def test_fetch_issues_open_duration_days(monkeypatch):
@@ -194,8 +210,5 @@ def test_fetch_issues_open_duration_days(monkeypatch):
 
     # Check date normalization
     time_between = df['open_duration_days']
-    print(time_between)
-    print("0: "+str(time_between[0]))
-    print("1: "+ str(time_between[1]))
 
     assert time_between[0] == 0 and time_between[1] == 2

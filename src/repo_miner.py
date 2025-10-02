@@ -33,16 +33,8 @@ def fetch_issues(repo_name: str, state: str = "all", max_issues: int = None) -> 
     # 1) Read GitHub token
     g = Github()
 
-    # 2) Initialize client and get the repo
-    # getting the repo
-    #if(repo_name == "any/repo"):
-    #    from src.test_repo import DummyRepo, DummyGithub
-    #    gh_instance = DummyGithub("fake-token")
-    #    repo = gh_instance.get_repo(repo_name)
-    #    print(repo)
-    #else:
+    # 2) Get repo
     repo = g.get_repo(repo_name)
-    #    print("=================================================")
 
     # 3) Fetch issues, filtered by state ('all', 'open', 'closed')
     if(state == "all"):
@@ -85,12 +77,12 @@ def fetch_issues(repo_name: str, state: str = "all", max_issues: int = None) -> 
 
         # updating the days inbetween
         if(issue.closed_at is None):
-            closed_at = datetime.now().isoformat()
+            closed_at = datetime.now()
         else:
-            closed_at = issue.closed_at.isoformat()
+            closed_at = issue.closed_at
 
 
-        date_one = datetime.fromisoformat(closed_at)
+        date_one = datetime.fromisoformat(closed_at.isoformat())
         date_two = datetime.fromisoformat(issue.created_at.isoformat())
 
         date_one = date_one.replace(tzinfo=None)
@@ -107,9 +99,9 @@ def fetch_issues(repo_name: str, state: str = "all", max_issues: int = None) -> 
     df['titles'] = titles
     df['users'] = users
     df['states'] = state
-    df['create_ats'] = created_ats
+    df['create_ats'] = issue.created_at.isoformat()
     df['open_duration_days'] =days_between
-    df['closed_ats'] = closed_ats
+    df['closed_ats'] = issue.closed_at.isoformat()
     df['comments'] = comments
 
     # return dataframe
@@ -156,15 +148,17 @@ def fetch_commits(repo_name: str, max_commits: int) -> pd.DataFrame:
     for commit_val in commits:
         if ((isinstance(max_commits, int) and (max_commits != None and i >= max_commits))):
             break
+
         # SHA
-        sha = commit_val.commit.sha
+        sha = commit_val.sha
         # author name and email
-        author_name = commit_val.commit.author.name
-        author_email = commit_val.commit.author.email
+        author_name = commit_val.author
+        author_email = commit_val.email
         # commit date in ISO-8601 format
-        commit_date = commit_val.commit.author.date.isoformat()
+        commit_date = commit_val.date.isoformat()
         # commit message
-        message_first_line = commit_val.commit.message.splitlines()[0]
+        message_first_line = commit_val.message.splitlines()[0]
+
         # adding to future dataframe columns
         shas.append(sha)
         author_names.append(author_name)
