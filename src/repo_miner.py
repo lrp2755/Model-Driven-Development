@@ -29,13 +29,10 @@ Sub-commands:
 '''
 def fetch_issues(repo_name: str, state: str = "all", max_issues: int = None) -> pd.DataFrame:
     # no authentication needed for public repositories so i didn't use a public key
-
     # 1) Read GitHub token
     g = Github()
-
     # 2) Get repo
     repo = g.get_repo(repo_name)
-
     # 3) Fetch issues, filtered by state ('all', 'open', 'closed')
     if(state == "all"):
         issues = repo.get_issues()
@@ -43,10 +40,8 @@ def fetch_issues(repo_name: str, state: str = "all", max_issues: int = None) -> 
         issues = repo.get_issues(state="open")
     elif(state == "closed"):
         issues = repo.get_issues(state="closed")
-
     # starting dataframe and the columns for the dataframe
     df = pd.DataFrame()
-
     ids = []
     numbers = []
     titles = []
