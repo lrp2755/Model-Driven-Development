@@ -1,9 +1,14 @@
 ''''
 Lianna Pottgen - lrp2755
 Model Driven Development - SWEN.746
-Homework #3
+Homework #4
 repo_miner.py
 '''
+
+import argparse
+from datetime import datetime
+import pandas as pd
+from github import Github
 
 # !/usr/bin/env python3
 """
@@ -16,19 +21,90 @@ Sub-commands:
   - fetch-commits
 """
 
-import argparse
-import pandas as pd
-from github import Github
+'''
+    the method fetch_issues() used in order to get all of the issues from the given
+    repository. This will ignore pull requests as well. This also has 2 optional parameters, 
+    state which will only get that specific state of the issue from that repo and max_issues
+    which will only get up to that max number of issues from the repository
+'''
+def fetch_issues(repo_name: str, state: str = "all", max_issues: int = None) -> pd.DataFrame:
+    # no authentication needed for public repositories so i didn't use a public key
+    # 1) Read GitHub token
+    g = Github()
+    # 2) Get repo
+    repo = g.get_repo(repo_name)
+    # 3) Fetch issues, filtered by state ('all', 'open', 'closed')
+    if(state == "all"):
+        issues = repo.get_issues()
+    elif(state == "open"):
+        issues = repo.get_issues(state="open")
+    elif(state == "closed"):
+        issues = repo.get_issues(state="closed")
+    # starting dataframe and the columns for the dataframe
+    df = pd.DataFrame()
+    ids = []
+    numbers = []
+    titles = []
+    users = []
+    states = []
+    created_ats = []
+    closed_ats = []
+    comments = []
 
-'''
-    the method fetch_issues() is referenced in the given test_repo.py file for 
-    this homework so i created a simple stubbed function as a temporary holder 
-    for the future!
-    this method will be developed further in future homeworks
-'''
-def fetch_issues():
-    # stubbed function since there is import requesting fetch_issues() in test_repo.py!
-    return None
+    days_between = []
+
+    i = 0
+
+    # 4) Normalize each issue (skip PRs)
+    for idx, issue in enumerate(issues):
+        # checks if it's NOT a pull request
+        if issue.pull_request is None:
+            if max_issues is not None and i >= max_issues:
+                break
+
+            # id, number, title, user, state, created_at, closed_at, comments.
+            ids.append(issue.id)
+            numbers.append(issue.number)
+            titles.append(issue.title)
+            users.append(issue.user.login)
+            states.append(issue.state)
+            if(issue.closed_at is None):
+                closed_ats.append('')
+            else:
+                closed_ats.append(issue.closed_at.isoformat())
+            created_ats.append(issue.created_at.isoformat())
+            comments.append(issue.comments)
+
+            # updating the days inbetween
+            if(issue.closed_at is None):
+                closed_at = datetime.now()
+            else:
+                closed_at = issue.closed_at
+
+            date_one = datetime.fromisoformat(closed_at.isoformat())
+            date_two = datetime.fromisoformat(issue.created_at.isoformat())
+
+            date_one = date_one.replace(tzinfo=None)
+            date_two = date_two.replace(tzinfo=None)
+
+            difference = abs((date_two.date() - date_one.date()).days)
+            days_between.append(difference)
+
+            i += 1
+
+    # 5) Build DataFrame
+    df['ids'] = ids
+    df['numbers'] = numbers
+    df['titles'] = titles
+    df['users'] = users
+    df['states'] = state
+    df['create_ats'] = created_ats
+    df['open_duration_days'] =days_between
+    df['closed_ats'] = closed_ats
+    df['comments'] = comments
+
+    # return dataframe
+    return df
 
 '''
     the method merge_and_summarize() is referenced in the given test_repo.py file for 
@@ -71,15 +147,17 @@ def fetch_commits(repo_name: str, max_commits: int) -> pd.DataFrame:
     for commit_val in commits:
         if ((isinstance(max_commits, int) and (max_commits != None and i >= max_commits))):
             break
+
         # SHA
-        sha = commit_val.commit.sha
+        sha = commit_val.sha
         # author name and email
-        author_name = commit_val.commit.author.name
+        author_name = commit_val.commit.author
         author_email = commit_val.commit.author.email
         # commit date in ISO-8601 format
         commit_date = commit_val.commit.author.date.isoformat()
         # commit message
         message_first_line = commit_val.commit.message.splitlines()[0]
+
         # adding to future dataframe columns
         shas.append(sha)
         author_names.append(author_name)
@@ -113,9 +191,18 @@ def main():
     # Sub-command: fetch-commits
     c1 = subparsers.add_parser("fetch-commits", help="Fetch commits and save to CSV")
     c1.add_argument("--repo", required=True, help="Repository in owner/repo format")
-    c1.add_argument("--max", type=int, dest="max_commits",
+    c1.add_argument("--max",  type=int, dest="max_commits",
                     help="Max number of commits to fetch")
-    c1.add_argument("--out", required=True, help="Path to output commits CSV")
+    c1.add_argument("--out",  required=True, help="Path to output commits CSV")
+
+    # Sub-command: fetch-issues
+    c2 = subparsers.add_parser("fetch-issues", help="Fetch issues and save to CSV")
+    c2.add_argument("--repo",  required=True, help="Repository in owner/repo format")
+    c2.add_argument("--state", choices=["all","open","closed"], default="all",
+                    help="Filter issues by state")
+    c2.add_argument("--max",   type=int, dest="max_issues",
+                    help="Max number of issues to fetch")
+    c2.add_argument("--out",   required=True, help="Path to output issues CSV")
 
     args = parser.parse_args()
 
@@ -124,6 +211,11 @@ def main():
         df = fetch_commits(args.repo, args.max_commits)
         df.to_csv(args.out, index=False)
         print(f"Saved {len(df)} commits to {args.out}")
+
+    elif args.command == "fetch-issues":
+        df = fetch_issues(args.repo, args.state, args.max_issues)
+        df.to_csv(args.out, index=False)
+        print(f"Saved {len(df)} issues to {args.out}")
 
 if __name__ == "__main__":
     main()

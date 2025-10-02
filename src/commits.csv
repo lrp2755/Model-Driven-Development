@@ -1,6 +1,18 @@
 shas,author_names,author_emails,commit_dates,messages
-a66029cdd0c46b9224e276a6e9b36aed1e01ce57,lrp2755,98621679+lrp2755@users.noreply.github.com,2025-09-19T01:25:44+00:00,Merge pull request #1 from lrp2755/rm0-dev
-71f9eb8d2a86fb0e6ef1940d38fa044ab4242d37,Lianna Pottgen,liannapottgen@liannas-air-2.wireless.rit.edu,2025-09-19T01:19:02+00:00,Final additions before tagging and merging!
-47796847cfd1775980862b83a22867ab6c0f855d,Lianna Pottgen,liannapottgen@liannas-air-2.wireless.rit.edu,2025-09-19T01:14:11+00:00,Fixing the ReadMe
-758f93945d7524e95218f93b10ac9553fb77f17a,Lianna Pottgen,liannapottgen@Liannas-MacBook-Air-2.local,2025-09-16T02:30:49+00:00,"Adding in repo_miner.py, requirements.txt, and the github workflow. Next step is adding in more the the top-level README.md and confirming code!"
-c0e1e1bf76599483d2cfe03dc8f730abf116240c,lrp2755,98621679+lrp2755@users.noreply.github.com,2025-09-16T02:11:46+00:00,Initial commit
+8556a6e5278d98854fc9532382fac7724b822ebb,"GitAuthor(name=""lrp2755"")",98621679+lrp2755@users.noreply.github.com,2025-09-26T02:43:23+00:00,Merge pull request #2 from lrp2755/rm1-dev
+bb7cf3e6304d067dcde5726bc9b1474dd13f8e26,"GitAuthor(name=""Lianna Pottgen"")",liannapottgen@Liannas-MacBook-Air-2.local,2025-09-26T02:37:28+00:00,Updating the README.md
+13368bdf53b77ef594a15927311e491e46f7d69c,"GitAuthor(name=""Lianna Pottgen"")",liannapottgen@Liannas-MacBook-Air-2.local,2025-09-26T02:31:00+00:00,updating docstrings
+02ad489529ca0fda3bd461946181e72d10de2f60,"GitAuthor(name=""Lianna Pottgen"")",liannapottgen@liannas-air-2.wireless.rit.edu,2025-09-25T20:00:33+00:00,"updating the repo, accidentally kept it as my own and not Hello-World"
+28295ad559b1f134fa4d29a90b7292e6d4f25e2a,"GitAuthor(name=""Lianna Pottgen"")",liannapottgen@liannas-air-2.wireless.rit.edu,2025-09-25T19:55:36+00:00,adding vcrpy to the tests
+e0dea2c50a72468232833f431faafb4af2495c21,"GitAuthor(name=""Lianna Pottgen"")",liannapottgen@liannas-air-2.wireless.rit.edu,2025-09-25T19:45:41+00:00,test cases added! and functional
+5017d59815a7bf81530cc9224d2d2e5327887697,"GitAuthor(name=""Lianna Pottgen"")",liannapottgen@Liannas-MacBook-Air-2.local,2025-09-25T19:27:25+00:00,Final changes to repo_miner before i add tests
+bba9686bd90d8aaf64fef812fe909afd8f39a116,"GitAuthor(name=""Lianna Pottgen"")",liannapottgen@Liannas-MacBook-Air-2.local,2025-09-25T19:25:23+00:00,Fixing the dataframe to have all data stored one commit per row rather than one date type per row
+5c4db190723c40b97d62c53a397b7b3eb15b8771,"GitAuthor(name=""Lianna Pottgen"")",liannapottgen@liannas-air-2.wireless.rit.edu,2025-09-25T18:02:33+00:00,Fixing ISO format and sha works with branches now
+dc245c54fd7d484cf4d813504b51d52e898f8c7c,"GitAuthor(name=""Lianna Pottgen"")",liannapottgen@liannas-air-2.wireless.rit.edu,2025-09-25T16:07:46+00:00,Updated bug with commit interation and I think I found how to utilize branch --> SHA so we can sort commits based on branches. I got locked out of Github since I ran the branch checker too many times ( :( ) but I will check again once I regain access in 30 minutes
+351f606ecbf383956c76e67c60880980909f2890,"GitAuthor(name=""Lianna Pottgen"")",liannapottgen@liannas-air-2.wireless.rit.edu,2025-09-25T15:30:55+00:00,Bug issues with repo_miner configuration? Also added fetch commits into repo_miner.py. Next steps is fixing the configuration issues
+b76a29653fec6c41df2418b1641849d8d581c488,"GitAuthor(name=""Lianna Pottgen"")",liannapottgen@liannas-air-2.wireless.rit.edu,2025-09-25T15:11:21+00:00,Moving the repo_miner.py and test_repo.py files into src
+a66029cdd0c46b9224e276a6e9b36aed1e01ce57,"GitAuthor(name=""lrp2755"")",98621679+lrp2755@users.noreply.github.com,2025-09-19T01:25:44+00:00,Merge pull request #1 from lrp2755/rm0-dev
+71f9eb8d2a86fb0e6ef1940d38fa044ab4242d37,"GitAuthor(name=""Lianna Pottgen"")",liannapottgen@liannas-air-2.wireless.rit.edu,2025-09-19T01:19:02+00:00,Final additions before tagging and merging!
+47796847cfd1775980862b83a22867ab6c0f855d,"GitAuthor(name=""Lianna Pottgen"")",liannapottgen@liannas-air-2.wireless.rit.edu,2025-09-19T01:14:11+00:00,Fixing the ReadMe
+758f93945d7524e95218f93b10ac9553fb77f17a,"GitAuthor(name=""Lianna Pottgen"")",liannapottgen@Liannas-MacBook-Air-2.local,2025-09-16T02:30:49+00:00,"Adding in repo_miner.py, requirements.txt, and the github workflow. Next step is adding in more the the top-level README.md and confirming code!"
+c0e1e1bf76599483d2cfe03dc8f730abf116240c,"GitAuthor(name=""lrp2755"")",98621679+lrp2755@users.noreply.github.com,2025-09-16T02:11:46+00:00,Initial commit
