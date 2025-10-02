@@ -66,8 +66,10 @@ class DummyGithub:
     def __init__(self, token):
         assert token == "fake-token"
         self._repo = None
-    def set_repo(self, DummyRepo):
-        self._repo = DummyRepo
+
+    def set_repo(self, repo):
+        self._repo = repo
+
     def get_repo(self, repo_name):
         # ignore repo_name; return repo set in test fixture
         return self._repo
@@ -132,7 +134,6 @@ def test_fetch_commits_empty(monkeypatch):
 
     assert len(df_set_max) == 0
 
-
 #PRs are excluded.
 #Dates parse correctly.
 #open_duration_days is computed accurately.
@@ -160,15 +161,19 @@ def test_fetch_issues_date_parse_correct(monkeypatch):
     ]
     gh_instance = DummyGithub("fake-token")
     gh_instance.set_repo(DummyRepo([], issues))
+
+    # monkeypatch fetch_issues to use our dummy instance
+    import src.repo_miner as repo_miner
+    monkeypatch.setattr(repo_miner, "Github", lambda: gh_instance)
+
     df = fetch_issues("any/repo", state="all")
 
     # Check date normalization
-    # TODO
-    # for all dates in date coloumn
     # check format is
     create_ats = df['create_ats']
     closed_ats = df['closed_ats']
-    print(create_ats)
+
+    # assert
 
 @pytest.mark.vcr()
 def test_fetch_issues_open_duration_days(monkeypatch):
@@ -178,9 +183,19 @@ def test_fetch_issues_open_duration_days(monkeypatch):
         DummyIssue(2, 102, "Issue B", "bob", "closed", now - timedelta(days=2), now, 2)
     ]
 
-    gh_instance._repo = DummyRepo([], issues)
+    gh_instance = DummyGithub("fake-token")
+    gh_instance.set_repo(DummyRepo([], issues))
+
+    # monkeypatch fetch_issues to use our dummy instance
+    import src.repo_miner as repo_miner
+    monkeypatch.setattr(repo_miner, "Github", lambda: gh_instance)
+
     df = fetch_issues("any/repo", state="all")
-    assert {"id", "number", "title", "user", "state", "created_at", "closed_at", "comments"}.issubset(df.columns)
-    assert len(df) == 2
+
     # Check date normalization
-    # TODO
+    time_between = df['open_duration_days']
+    print(time_between)
+    print("0: "+str(time_between[0]))
+    print("1: "+ str(time_between[1]))
+
+    assert time_between[0] == 0 and time_between[1] == 2

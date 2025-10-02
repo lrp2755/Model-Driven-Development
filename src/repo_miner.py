@@ -35,12 +35,14 @@ def fetch_issues(repo_name: str, state: str = "all", max_issues: int = None) -> 
 
     # 2) Initialize client and get the repo
     # getting the repo
-    if(repo_name != "any/repo"):
-        repo = g.get_repo(repo_name)
-    else:
-        from src.test_repo import DummyRepo, DummyGithub
-        gh_instance = DummyGithub("fake-token")
-        repo = gh_instance.get_repo(repo_name)
+    #if(repo_name == "any/repo"):
+    #    from src.test_repo import DummyRepo, DummyGithub
+    #    gh_instance = DummyGithub("fake-token")
+    #    repo = gh_instance.get_repo(repo_name)
+    #    print(repo)
+    #else:
+    repo = g.get_repo(repo_name)
+    #    print("=================================================")
 
     # 3) Fetch issues, filtered by state ('all', 'open', 'closed')
     if(state == "all"):
@@ -68,7 +70,7 @@ def fetch_issues(repo_name: str, state: str = "all", max_issues: int = None) -> 
 
     # 4) Normalize each issue (skip PRs)
     for idx, issue in enumerate(issues):
-        if i >= max_issues:
+        if max_issues is not None and i >= max_issues:
             break
 
         # id, number, title, user, state, created_at, closed_at, comments.
@@ -85,7 +87,8 @@ def fetch_issues(repo_name: str, state: str = "all", max_issues: int = None) -> 
         if(issue.closed_at is None):
             closed_at = datetime.now().isoformat()
         else:
-            closed_at = issue.closed_at
+            closed_at = issue.closed_at.isoformat()
+
 
         date_one = datetime.fromisoformat(closed_at)
         date_two = datetime.fromisoformat(issue.created_at.isoformat())
@@ -93,7 +96,7 @@ def fetch_issues(repo_name: str, state: str = "all", max_issues: int = None) -> 
         date_one = date_one.replace(tzinfo=None)
         date_two = date_two.replace(tzinfo=None)
 
-        difference = (date_two.date() - date_one.date()).days
+        difference = abs((date_two.date() - date_one.date()).days)
         days_between.append(difference)
 
         i += 1
