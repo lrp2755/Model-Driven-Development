@@ -1,7 +1,7 @@
 ''''
 Lianna Pottgen - lrp2755
 Model Driven Development - SWEN.746
-Homework #3
+Homework #4
 test_repo.py
 '''
 
@@ -91,6 +91,11 @@ gh_instance = DummyGithub("fake-token")
 # --- Tests for fetch_commits ---
 # An example test case
 
+'''
+    test_fetch_commits_basic is a test that will determine if all of the columns are correct in 
+    the csv file that we get from the method, check both commits are in the csv file, and 
+    the first message. This utilizes monkeypatch to use the dummy GitHub classes.
+'''
 def test_fetch_commits_basic(monkeypatch):
     # Setup dummy commits
     now = datetime.now()
@@ -112,7 +117,6 @@ def test_fetch_commits_basic(monkeypatch):
     first_commit = df['messages'][0]
     assert first_commit == "Initial commit"
 
-# TODO： Test that fetch_commits respects the max_commits limit.
 '''
     the test_fetch_commits_basic() function is a function that will test if the fetch_commits
     method from repo_miner will accurately respect the max_commit parameter. 
@@ -122,13 +126,22 @@ def test_fetch_commits_basic(monkeypatch):
 '''
 @pytest.mark.vcr()
 def test_fetch_commits_limit(monkeypatch):
-    df_no_max = fetch_commits("octocat/Hello-World", "")
-    df_no_max.to_csv()
+    now = datetime.now()
+    commits = [
+        DummyCommit("sha1", "Alice", "a@example.com", now, "Initial commit\nDetails"),
+        DummyCommit("sha2", "Bob", "b@example.com", now - timedelta(days=1), "Bug fix")
+    ]
+    gh_instance = DummyGithub("fake-token")
+    gh_instance.set_repo(DummyRepo(commits, []))
 
-    df_set_max = fetch_commits("octocat/Hello-World", 2)
-    df_set_max.to_csv()
+    # monkeypatch fetch_issues to use our dummy instance
+    import src.repo_miner as repo_miner
+    monkeypatch.setattr(repo_miner, "Github", lambda: gh_instance)
 
-    assert len(df_set_max) == 2 and (len(df_no_max)  > len(df_set_max))
+    df_with_commits = fetch_commits("any/repo", None)
+    df_max_zero = fetch_commits("any/repo", 0)
+
+    assert len(df_with_commits) == 2 and len(df_max_zero) == 0
 
 '''
     test_fetch_commits_empty() is a method that will check that if there are 0 commits
@@ -146,23 +159,38 @@ def test_fetch_commits_empty(monkeypatch):
 
     assert len(df_set_max) == 0
 
-#PRs are excluded.
-#Dates parse correctly.
-#open_duration_days is computed accurately.
+'''
+    test_fetch_issues_pr_excluded() is a test that will confirm that PRs are excluded in the 
+    fetch issues method. This will create an issue that has a PR and one that does not and 
+    confirmt that only 1 commit is actually included in the final csv file.
+'''
 @pytest.mark.vcr()
 def test_fetch_issues_pr_excluded(monkeypatch):
     #ids,numbers,titles,users,states,create_ats,open_duration_days,closed_ats,comments
 
     now = datetime.now()
     issues = [
-        DummyIssue(1, 101, "Issue A", "alice", "open", now, None, 0),
-        DummyIssue(2, 102, "Issue B", "bob", "closed", now - timedelta(days=2), now, 2)
+        DummyIssue(1, 101, "Issue A", "alice", "open", now, None, 0, False),
+        DummyIssue(2, 102, "Issue B", "bob", "closed", now - timedelta(days=2), now, 2, True)
     ]
-    gh_instance._repo = DummyRepo([], issues)
-    df = fetch_issues("any/repo", state="all")
-    assert {"id", "number", "title", "user", "state", "created_at", "closed_at", "comments"}.issubset(df.columns)
-    assert len(df) == 2
 
+    gh_instance = DummyGithub("fake-token")
+    gh_instance.set_repo(DummyRepo([], issues))
+
+    # monkeypatch fetch_issues to use our dummy instance
+    import src.repo_miner as repo_miner
+    monkeypatch.setattr(repo_miner, "Github", lambda: gh_instance)
+
+    df = fetch_issues("any/repo", state="all")
+
+    assert len(df) == 1
+
+'''
+    test_fetch_issues_date_parse_correct() is a test that will confirm that the date of each of 
+    the lines in the csv file have an ISO formatted date. I checked this by comparing strings
+    and taking off extra data. 
+'''
+@pytest.mark.vcr()
 def test_fetch_issues_date_parse_correct(monkeypatch):
     now = datetime.now()
     issues = [
@@ -178,19 +206,21 @@ def test_fetch_issues_date_parse_correct(monkeypatch):
 
     df = fetch_issues("any/repo", state="all")
 
-    # Check date normalization
-    # check format is
     create_ats = df['create_ats']
     closed_ats = df['closed_ats']
 
     # assert
-    assert str(closed_ats[1]) == now.isoformat()
-    assert str(create_ats[0]) == now.isoformat()
-    #assert closed_ats[0] == ''
-    #assert str(create_ats[1]) == now - timedelta(days=2).isoformat()
-    #assert closed_ats[0] == ''
+    assert closed_ats[0] == ''
+    assert str(closed_ats[1]).split(".")[0] == now.isoformat().split(".")[0]
+    assert str(create_ats[0]).split(".")[0]  == now.isoformat().split(".")[0]
+    assert str(create_ats[1]).split(".")[0]  == ((now - timedelta(days=2)).isoformat()).split(".")[0]
 
-
+'''
+    test_fetch_issues_open_duration_days() is a test that will confirm that the days between
+    idea is accurate in the fetch issues methods. This will check to compare the 2 dates in
+    GitHub dummy issues and will ensure the final number on the csv file is accurate. This 
+    goes for both issues that are closed and some that are still open. 
+'''
 @pytest.mark.vcr()
 def test_fetch_issues_open_duration_days(monkeypatch):
     now = datetime.now()

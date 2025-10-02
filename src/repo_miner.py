@@ -62,36 +62,40 @@ def fetch_issues(repo_name: str, state: str = "all", max_issues: int = None) -> 
 
     # 4) Normalize each issue (skip PRs)
     for idx, issue in enumerate(issues):
-        if max_issues is not None and i >= max_issues:
-            break
+        # checks if it's NOT a pull request
+        if issue.pull_request is None:
+            if max_issues is not None and i >= max_issues:
+                break
 
-        # id, number, title, user, state, created_at, closed_at, comments.
-        ids.append(issue.id)
-        numbers.append(issue.number)
-        titles.append(issue.title)
-        users.append(issue.user.login)
-        states.append(issue.state)
-        created_ats.append(issue.created_at)
-        closed_ats.append(issue.closed_at)
-        comments.append(issue.comments)
+            # id, number, title, user, state, created_at, closed_at, comments.
+            ids.append(issue.id)
+            numbers.append(issue.number)
+            titles.append(issue.title)
+            users.append(issue.user.login)
+            states.append(issue.state)
+            if(issue.closed_at is None):
+                closed_ats.append('')
+            else:
+                closed_ats.append(issue.closed_at.isoformat())
+            created_ats.append(issue.created_at.isoformat())
+            comments.append(issue.comments)
 
-        # updating the days inbetween
-        if(issue.closed_at is None):
-            closed_at = datetime.now()
-        else:
-            closed_at = issue.closed_at
+            # updating the days inbetween
+            if(issue.closed_at is None):
+                closed_at = datetime.now()
+            else:
+                closed_at = issue.closed_at
 
+            date_one = datetime.fromisoformat(closed_at.isoformat())
+            date_two = datetime.fromisoformat(issue.created_at.isoformat())
 
-        date_one = datetime.fromisoformat(closed_at.isoformat())
-        date_two = datetime.fromisoformat(issue.created_at.isoformat())
+            date_one = date_one.replace(tzinfo=None)
+            date_two = date_two.replace(tzinfo=None)
 
-        date_one = date_one.replace(tzinfo=None)
-        date_two = date_two.replace(tzinfo=None)
+            difference = abs((date_two.date() - date_one.date()).days)
+            days_between.append(difference)
 
-        difference = abs((date_two.date() - date_one.date()).days)
-        days_between.append(difference)
-
-        i += 1
+            i += 1
 
     # 5) Build DataFrame
     df['ids'] = ids
@@ -99,9 +103,9 @@ def fetch_issues(repo_name: str, state: str = "all", max_issues: int = None) -> 
     df['titles'] = titles
     df['users'] = users
     df['states'] = state
-    df['create_ats'] = issue.created_at.isoformat()
+    df['create_ats'] = created_ats
     df['open_duration_days'] =days_between
-    df['closed_ats'] = issue.closed_at.isoformat()
+    df['closed_ats'] = closed_ats
     df['comments'] = comments
 
     # return dataframe
@@ -152,12 +156,12 @@ def fetch_commits(repo_name: str, max_commits: int) -> pd.DataFrame:
         # SHA
         sha = commit_val.sha
         # author name and email
-        author_name = commit_val.author
-        author_email = commit_val.email
+        author_name = commit_val.commit.author
+        author_email = commit_val.commit.author.email
         # commit date in ISO-8601 format
-        commit_date = commit_val.date.isoformat()
+        commit_date = commit_val.commit.author.date.isoformat()
         # commit message
-        message_first_line = commit_val.message.splitlines()[0]
+        message_first_line = commit_val.commit.message.splitlines()[0]
 
         # adding to future dataframe columns
         shas.append(sha)
