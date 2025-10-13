@@ -6,9 +6,11 @@ repo_miner.py
 '''
 
 import argparse
+from collections import Counter
 from datetime import datetime
 import pandas as pd
 from github import Github
+from numpy.ma.extras import average
 
 # !/usr/bin/env python3
 """
@@ -20,6 +22,62 @@ A command-line tool to:
 Sub-commands:
   - fetch-commits
 """
+
+def merge_and_summarize(commits_df: pd.DataFrame, issues_df: pd.DataFrame) -> None:
+    """
+    Takes two DataFrames (commits and issues) and prints:
+      - Top 5 committers by commit count
+      - Issue close rate (closed/total)
+      - Average open duration for closed issues (in days)
+    """
+    # Copy to avoid modifying original data
+    commits = commits_df.copy()
+    issues  = issues_df.copy()
+
+
+    # 1) Normalize date/time columns to pandas datetime
+    #commits['date'] = pd.to_datetime(commits['date'], errors='coerce')
+    # TODO issues['created_at'] = ...
+    # issues['closed_at']  = ...
+
+    issues_closed_at_array = issues['closed_ats']
+    issues_days_open_array = issues['open_duration_days']
+    users_array = commits['author_names']
+    issues_closed = 0
+    average_days_open = 0
+    for i in range(0, len(issues_closed_at_array)):
+        if(str(issues_closed_at_array[i]) != "nan"):
+            issues_closed += 1
+        average_days_open += issues_days_open_array[i]
+
+    # 2) Top 5 committers
+    author_counts = Counter(users_array)
+    top_five_committers = author_counts.most_common(5)
+
+    author_number = 1
+    if(len(top_five_committers) >= 5):
+        print("Top 5 Committers: ")
+        for i in range(0, 5):
+            print("\t"+str(author_number)+".) "+str(top_five_committers[i][0].split("\"")[1])+" with "+str(top_five_committers[i][1])+" commits.")
+            author_number += 1
+    else:
+        print("Top "+str(len(top_five_committers))+" Committers: ")
+        for author in top_five_committers:
+            print("\t"+str(author_number)+".) "+str(author[0].split("\"")[1])+" with "+str(author[1])+" commits.")
+            author_number += 1
+        print("NOTE: There are less than 5 unique committers.")
+
+    if(issues_closed == 0):
+        # 3) Calculate issue close rate
+        print("\nIssue Closed Rate: 0% (No issues have been closed)")
+        # 4) Compute average open duration (days) for closed issues
+        print("Average Open Duration: "+str((average_days_open / len(issues_closed_at_array)))+" days (No issues have been closed)\n")
+    else:
+        # 3) Calculate issue close rate
+        print("\nIssue closed rate: "+str((issues_closed/len(issues_closed_at_array))*100)+"%")
+        # 4) Compute average open duration (days) for closed issues
+        print("Average open duration: " + str(average_days_open / issues_closed)+" days\n")
+
 
 '''
     the method fetch_issues() used in order to get all of the issues from the given
@@ -105,28 +163,6 @@ def fetch_issues(repo_name: str, state: str = "all", max_issues: int = None) -> 
 
     # return dataframe
     return df
-
-def merge_and_summarize(commits_df: pd.DataFrame, issues_df: pd.DataFrame) -> None:
-    """
-    Takes two DataFrames (commits and issues) and prints:
-      - Top 5 committers by commit count
-      - Issue close rate (closed/total)
-      - Average open duration for closed issues (in days)
-    """
-    # Copy to avoid modifying original data
-    commits = commits_df.copy()
-    issues  = issues_df.copy()
-
-    # 1) Normalize date/time columns to pandas datetime
-    commits['date']      = pd.to_datetime(commits['date'], errors='coerce')
-    # TODO issues['created_at'] = ...
-    # issues['closed_at']  = ...
-
-    # 2) Top 5 committers
-
-    # 3) Calculate issue close rate
-
-    # 4) Compute average open duration (days) for closed issues
 
 '''
     fetch_commits() is a method that will take in a repo name and a number of max
