@@ -2,7 +2,7 @@
 Lianna Pottgen - lrp2755
 Model Driven Development - SWEN.746
 Homework #4
-test_repo.py
+old_test_repo.py
 '''
 
 # tests/test_repo_miner.py
