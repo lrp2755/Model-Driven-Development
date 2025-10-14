@@ -243,6 +243,12 @@ def test_fetch_issues_open_duration_days(monkeypatch):
 
     assert time_between[0] == 0 and time_between[1] == 2
 
+'''
+    test_merge_and_summarize_output() is a method that will test the merge_and_summarize method
+    to ensure that it is printing out the correct data with accurate percentages and information. 
+    This will create a dummy set of data and then utilize the dummy data to create the output
+    information.
+'''
 def test_merge_and_summarize_output(capsys):
     # Prepare test DataFrames
     df_commits = pd.DataFrame({

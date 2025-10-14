@@ -23,6 +23,12 @@ Sub-commands:
   - fetch-commits
 """
 
+'''
+    merge_and_summarize is a method that will take in 2 data frames and determine
+    the top 5 committers by commit count, issue closing rate, and average open duration
+    for closed issues. This will utilize the dataframes from the commits.csv and issues.csv
+    files and will print out the data to the user!
+'''
 def merge_and_summarize(commits_df: pd.DataFrame, issues_df: pd.DataFrame) -> None:
     """
     Takes two DataFrames (commits and issues) and prints:
