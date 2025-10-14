@@ -112,7 +112,7 @@ def test_fetch_commits_basic(monkeypatch):
 
     df = fetch_commits("any/repo", None)
 
-    assert list(df.columns) == ["shas", "author", "author_emails", "commit_dates", "messages"]
+    assert list(df.columns) == ["shas", "author", "author_emails", "date", "messages"]
     assert len(df) == 2
     first_commit = df['messages'][0]
     assert first_commit == "Initial commit"

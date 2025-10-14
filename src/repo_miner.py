@@ -36,9 +36,19 @@ def merge_and_summarize(commits_df: pd.DataFrame, issues_df: pd.DataFrame) -> No
 
 
     # 1) Normalize date/time columns to pandas datetime
-    #commits['date'] = pd.to_datetime(commits['date'], errors='coerce')
-    # TODO issues['created_at'] = ...
-    # issues['closed_at']  = ...
+    commits['date'] = pd.to_datetime(commits['date'], errors='coerce')
+    issues['created_at'] = pd.to_datetime(issues['created_at'], errors='coerce')
+    issues['closed_at'] = pd.to_datetime(issues['closed_at'], errors='coerce')
+
+    commits_per_day = commits.groupby('date').size().reset_index(name='commits_count')
+    issues_created_per_day = issues.groupby('created_at').size().reset_index(name='issues_created')
+    issues_closed_per_day = issues.groupby('closed_at').size().reset_index(name='issues_closed')
+
+    merged = (
+        commits_per_day
+        .merge(issues_created_per_day, left_on='date', right_on='created_at', how='outer')
+        .merge(issues_closed_per_day, left_on='date', right_on='closed_at', how='outer')
+    )
 
     issues_created_at_array = issues['created_at']
     issues_closed_at_array = issues['closed_at']
@@ -47,14 +57,13 @@ def merge_and_summarize(commits_df: pd.DataFrame, issues_df: pd.DataFrame) -> No
     issues_closed = 0
     average_days_open = 0
     for i in range(0, len(issues_closed_at_array)):
-        if(str(issues_closed_at_array[i]) != "nan" and str(issues_closed_at_array[i]) != "None"):
+        if(str(issues_closed_at_array[i]) != "nan" and str(issues_closed_at_array[i]) != "None" and str(issues_closed_at_array[i]) != "NaT"):
             issues_closed += 1
-        if (issues_closed_at_array[i] is None or str(issues_closed_at_array[i]) == "nan"):
+        if (issues_closed_at_array[i] is None or str(issues_closed_at_array[i]) == "nan" or str(issues_closed_at_array[i]) == "NaT"):
             closed_at = datetime.now().isoformat()
         else:
-            closed_at = issues_closed_at_array[i]
+            closed_at = issues_closed_at_array[i].isoformat()
 
-        #print("CLOSED AT: "+closed_at)
         date_one = datetime.fromisoformat(closed_at)
         date_two = datetime.fromisoformat(str(issues_created_at_array[i]))
 
@@ -78,14 +87,14 @@ def merge_and_summarize(commits_df: pd.DataFrame, issues_df: pd.DataFrame) -> No
                 author_name = top_five_committers[i][0].split("\"")[1]
             else:
                 author_name = top_five_committers[i][0]
-            print(str(author_name) + ": " + str(top_five_committers[i][1]) + " commits")
+            print("\t"+str(author_name) + ": " + str(top_five_committers[i][1]) + " commits")
     else:
         for author in top_five_committers:
             if ("GitAuthor" in author[0]):
                 author_name = author[0].split("\"")[1]
             else:
                 author_name =  author[0]
-            print(str(author_name)+": "+str(author[1])+" commits")
+            print("\t"+str(author_name)+": "+str(author[1])+" commits")
         print("NOTE: There are less than 5 unique committers.")
 
     if(issues_closed == 0):
@@ -241,7 +250,7 @@ def fetch_commits(repo_name: str, max_commits: int) -> pd.DataFrame:
     df['shas'] = shas
     df['author'] = author_names
     df['author_emails'] = author_emails
-    df['commit_dates'] = commit_dates
+    df['date'] = commit_dates
     df['messages'] = messages
 
     # return dataframe
