@@ -40,43 +40,64 @@ def merge_and_summarize(commits_df: pd.DataFrame, issues_df: pd.DataFrame) -> No
     # TODO issues['created_at'] = ...
     # issues['closed_at']  = ...
 
-    issues_closed_at_array = issues['closed_ats']
-    issues_days_open_array = issues['open_duration_days']
-    users_array = commits['author_names']
+    issues_created_at_array = issues['created_at']
+    issues_closed_at_array = issues['closed_at']
+
+    users_array = commits['author']
     issues_closed = 0
     average_days_open = 0
     for i in range(0, len(issues_closed_at_array)):
-        if(str(issues_closed_at_array[i]) != "nan"):
+        if(str(issues_closed_at_array[i]) != "nan" and str(issues_closed_at_array[i]) != "None"):
             issues_closed += 1
-        average_days_open += issues_days_open_array[i]
+        if (issues_closed_at_array[i] is None or str(issues_closed_at_array[i]) == "nan"):
+            closed_at = datetime.now().isoformat()
+        else:
+            closed_at = issues_closed_at_array[i]
+
+        #print("CLOSED AT: "+closed_at)
+        date_one = datetime.fromisoformat(closed_at)
+        date_two = datetime.fromisoformat(str(issues_created_at_array[i]))
+
+        date_one = date_one.replace(tzinfo=None)
+        date_two = date_two.replace(tzinfo=None)
+
+        difference = abs((date_two.date() - date_one.date()).days)
+        average_days_open += difference
+
+        #average_days_open += issues_days_open_array[i]
 
     # 2) Top 5 committers
     author_counts = Counter(users_array)
     top_five_committers = author_counts.most_common(5)
+    author_name = ""
 
-    author_number = 1
+    print("Top 5 committers: ")
     if(len(top_five_committers) >= 5):
-        print("Top 5 Committers: ")
         for i in range(0, 5):
-            print("\t"+str(author_number)+".) "+str(top_five_committers[i][0].split("\"")[1])+" with "+str(top_five_committers[i][1])+" commits.")
-            author_number += 1
+            if ("GitAuthor" in top_five_committers[i][0]):
+                author_name = top_five_committers[i][0].split("\"")[1]
+            else:
+                author_name = top_five_committers[i][0]
+            print(str(author_name) + ": " + str(top_five_committers[i][1]) + " commits")
     else:
-        print("Top "+str(len(top_five_committers))+" Committers: ")
         for author in top_five_committers:
-            print("\t"+str(author_number)+".) "+str(author[0].split("\"")[1])+" with "+str(author[1])+" commits.")
-            author_number += 1
+            if ("GitAuthor" in author[0]):
+                author_name = author[0].split("\"")[1]
+            else:
+                author_name =  author[0]
+            print(str(author_name)+": "+str(author[1])+" commits")
         print("NOTE: There are less than 5 unique committers.")
 
     if(issues_closed == 0):
         # 3) Calculate issue close rate
-        print("\nIssue Closed Rate: 0% (No issues have been closed)")
+        print("\nIssue close rate: 0.0")
         # 4) Compute average open duration (days) for closed issues
-        print("Average Open Duration: "+str((average_days_open / len(issues_closed_at_array)))+" days (No issues have been closed)\n")
+        print("Avg. issue open duration: " + str(average_days_open)+" days\n")
     else:
         # 3) Calculate issue close rate
-        print("\nIssue closed rate: "+str((issues_closed/len(issues_closed_at_array))*100)+"%")
+        print("\nIssue close rate: "+str(round((issues_closed/len(issues_closed_at_array)),2)))
         # 4) Compute average open duration (days) for closed issues
-        print("Average open duration: " + str(average_days_open / issues_closed)+" days\n")
+        print("Avg. issue open duration: " + str(average_days_open / issues_closed)+" days\n")
 
 
 '''
@@ -154,11 +175,11 @@ def fetch_issues(repo_name: str, state: str = "all", max_issues: int = None) -> 
     df['ids'] = ids
     df['numbers'] = numbers
     df['titles'] = titles
-    df['users'] = users
+    df['user'] = users
     df['states'] = state
-    df['create_ats'] = created_ats
+    df['created_at'] = created_ats
     df['open_duration_days'] =days_between
-    df['closed_ats'] = closed_ats
+    df['closed_at'] = closed_ats
     df['comments'] = comments
 
     # return dataframe
@@ -218,7 +239,7 @@ def fetch_commits(repo_name: str, max_commits: int) -> pd.DataFrame:
 
     # updating dataframe columns
     df['shas'] = shas
-    df['author_names'] = author_names
+    df['author'] = author_names
     df['author_emails'] = author_emails
     df['commit_dates'] = commit_dates
     df['messages'] = messages

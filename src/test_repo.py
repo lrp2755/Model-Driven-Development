@@ -112,7 +112,7 @@ def test_fetch_commits_basic(monkeypatch):
 
     df = fetch_commits("any/repo", None)
 
-    assert list(df.columns) == ["shas", "author_names", "author_emails", "commit_dates", "messages"]
+    assert list(df.columns) == ["shas", "author", "author_emails", "commit_dates", "messages"]
     assert len(df) == 2
     first_commit = df['messages'][0]
     assert first_commit == "Initial commit"
@@ -206,8 +206,8 @@ def test_fetch_issues_date_parse_correct(monkeypatch):
 
     df = fetch_issues("any/repo", state="all")
 
-    create_ats = df['create_ats']
-    closed_ats = df['closed_ats']
+    create_ats = df['created_at']
+    closed_ats = df['closed_at']
 
     # assert
     assert closed_ats[0] == ''
