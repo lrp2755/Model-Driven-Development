@@ -86,6 +86,7 @@ def merge_and_summarize(commits_df: pd.DataFrame, issues_df: pd.DataFrame) -> No
     top_five_committers = author_counts.most_common(5)
     author_name = ""
 
+    output = "Top 5 committers:\n"
     print("Top 5 committers: ")
     if(len(top_five_committers) >= 5):
         for i in range(0, 5):
@@ -93,6 +94,7 @@ def merge_and_summarize(commits_df: pd.DataFrame, issues_df: pd.DataFrame) -> No
                 author_name = top_five_committers[i][0].split("\"")[1]
             else:
                 author_name = top_five_committers[i][0]
+            output += "\t"+str(author_name) + ": " + str(top_five_committers[i][1]) + " commits\n"
             print("\t"+str(author_name) + ": " + str(top_five_committers[i][1]) + " commits")
     else:
         for author in top_five_committers:
@@ -100,20 +102,28 @@ def merge_and_summarize(commits_df: pd.DataFrame, issues_df: pd.DataFrame) -> No
                 author_name = author[0].split("\"")[1]
             else:
                 author_name =  author[0]
+            output += "\t"+str(author_name)+": "+str(author[1])+" commits\n"
             print("\t"+str(author_name)+": "+str(author[1])+" commits")
+        output += "NOTE: There are less than 5 unique committers.\n"
         print("NOTE: There are less than 5 unique committers.")
 
     if(issues_closed == 0):
         # 3) Calculate issue close rate
+        output += "Issue close rate: 0.0\n"
         print("\nIssue close rate: 0.0")
         # 4) Compute average open duration (days) for closed issues
+        output += "Avg. issue open duration: " + str(average_days_open)+" days\n"
         print("Avg. issue open duration: " + str(average_days_open)+" days\n")
     else:
         # 3) Calculate issue close rate
+        output += "Issue close rate: "+str(round((issues_closed/len(issues_closed_at_array)),2))+"\n"
         print("\nIssue close rate: "+str(round((issues_closed/len(issues_closed_at_array)),2)))
         # 4) Compute average open duration (days) for closed issues
+        output += "Avg. issue open duration: " + str(average_days_open / issues_closed)+" days\n"
         print("Avg. issue open duration: " + str(average_days_open / issues_closed)+" days\n")
 
+    with open('summarize.txt', 'w') as file:
+        file.write(output)
 
 '''
     the method fetch_issues() used in order to get all of the issues from the given

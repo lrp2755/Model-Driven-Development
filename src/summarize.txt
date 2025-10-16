@@ -1,0 +1,8 @@
+Top 5 committers:
+	IncrediblePro: 33 commits
+	Yamilini2000: 3 commits
+	Popstar Idhant: 3 commits
+	Mr.B: 2 commits
+	Anirban Saha: 2 commits
+Issue close rate: 1.0
+Avg. issue open duration: 3.0 days
