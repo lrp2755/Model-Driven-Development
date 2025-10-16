@@ -29,6 +29,8 @@ Avg. issue open duration: 3.0 days
 
 In order to get accurate results the "python3 -m repo_miner fetch-issues --repo MrB141107/Hacktoberfest_2022 --out issues.csv" command and "python3 -m repo_miner fetch-commits --repo MrB141107/Hacktoberfest_2022 --out commits.csv" must be run with the MrB141107/Hacktoberfest_2022 repo so summarize will work correctly! 
 
+Since the write up also says "Sample output (in your data/ directory) for a well-known repo." summarize will write to summarize.txt and summarize data so the sample output is in the directory as well. 
+
 ## Contributing
 
 This repository is based off of the past couple of weeks of the homeworks from homework #1 to this most recent addition from homework #5. 
