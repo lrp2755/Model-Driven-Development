@@ -1,7 +1,7 @@
 ''''
 Lianna Pottgen - lrp2755
 Model Driven Development - SWEN.746
-Homework #4
+Homework #5
 test_repo.py
 '''
 
@@ -112,7 +112,7 @@ def test_fetch_commits_basic(monkeypatch):
 
     df = fetch_commits("any/repo", None)
 
-    assert list(df.columns) == ["shas", "author_names", "author_emails", "commit_dates", "messages"]
+    assert list(df.columns) == ["shas", "author", "author_emails", "date", "messages"]
     assert len(df) == 2
     first_commit = df['messages'][0]
     assert first_commit == "Initial commit"
@@ -206,8 +206,8 @@ def test_fetch_issues_date_parse_correct(monkeypatch):
 
     df = fetch_issues("any/repo", state="all")
 
-    create_ats = df['create_ats']
-    closed_ats = df['closed_ats']
+    create_ats = df['created_at']
+    closed_ats = df['closed_at']
 
     # assert
     assert closed_ats[0] == ''
@@ -242,3 +242,41 @@ def test_fetch_issues_open_duration_days(monkeypatch):
     time_between = df['open_duration_days']
 
     assert time_between[0] == 0 and time_between[1] == 2
+
+'''
+    test_merge_and_summarize_output() is a method that will test the merge_and_summarize method
+    to ensure that it is printing out the correct data with accurate percentages and information. 
+    This will create a dummy set of data and then utilize the dummy data to create the output
+    information.
+'''
+def test_merge_and_summarize_output(capsys):
+    # Prepare test DataFrames
+    df_commits = pd.DataFrame({
+        "sha": ["a", "b", "c", "d"],
+        "author": ["X", "Y", "X", "Z"],
+        "email": ["x@e", "y@e", "x@e", "z@e"],
+        "date": ["2025-01-01T00:00:00", "2025-01-01T01:00:00",
+                 "2025-01-02T00:00:00", "2025-01-02T01:00:00"],
+        "message": ["m1", "m2", "m3", "m4"]
+    })
+    df_issues = pd.DataFrame({
+        "id": [1,2,3],
+        "number": [101,102,103],
+        "title": ["I1","I2","I3"],
+        "user": ["u1","u2","u3"],
+        "state": ["closed","open","closed"],
+        "created_at": ["2025-01-01T00:00:00","2025-01-01T02:00:00","2025-01-02T00:00:00"],
+        "closed_at": ["2025-01-01T12:00:00",None,"2025-01-02T12:00:00"],
+        "comments": [0,1,2]
+    })
+    # Run summarize
+    merge_and_summarize(df_commits, df_issues)
+    captured = capsys.readouterr().out
+    # Check top committer
+    assert "Top 5 committers" in captured
+    assert "X: 2 commits" in captured
+    # Check close rate
+    assert "Issue close rate: 0.67" in captured
+    # Check avg open duration
+    assert "Avg. issue open duration:" in captured
+
