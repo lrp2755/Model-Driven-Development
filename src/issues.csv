@@ -1,2 +1,4 @@
 ids,numbers,titles,user,states,created_at,open_duration_days,closed_at,comments
-3469831995,3,Test Issue,lrp2755,all,2025-09-30T14:39:44+00:00,2,,0
+1410553973,24,add an automatic message sender for whatsapp,Naman82,all,2022-10-16T17:11:57+00:00,6,2022-10-22T04:06:26+00:00,2
+1396688946,15,The repository lacks the problem 121.Best time to buy and sell stocks,Anirban-Saha,all,2022-10-04T18:35:39+00:00,3,2022-10-07T15:54:22+00:00,0
+1394608627,3,Add Tic Tac Toe [MinMax Algorithm],Sabyasachi-Seal,all,2022-10-03T11:56:28+00:00,0,2022-10-03T12:06:22+00:00,3
