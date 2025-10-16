@@ -27,6 +27,7 @@ Sub-commands:
     the top 5 committers by commit count, issue closing rate, and average open duration
     for closed issues. This will utilize the dataframes from the commits.csv and issues.csv
     files and will print out the data to the user!
+    This method will also go through and normalize the issues and commits based on dates!
 '''
 def merge_and_summarize(commits_df: pd.DataFrame, issues_df: pd.DataFrame) -> None:
     """
@@ -262,6 +263,12 @@ def fetch_commits(repo_name: str, max_commits: int) -> pd.DataFrame:
     # return dataframe
     return df
 
+"""
+    main() will determine what command the user typed in and will identify which method to 
+    call and with which parameters.
+    main() has been updated for HW #4 to include calls for fetch-commits, fetch-issues, and for
+    summarize (merge_and_summarize ! )
+"""
 def main():
     """
     Parse command-line arguments and dispatch to sub-commands.
